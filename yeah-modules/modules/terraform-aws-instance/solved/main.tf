@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.aws_default_region
-}
-
 resource "aws_instance" "web" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
@@ -47,12 +43,6 @@ resource "aws_security_group" "allow_ssh" {
     self             = false
   }]
   tags = {}
-}
-
-resource "local_file" "ssh" {
-  content         = tls_private_key.ssh.private_key_pem
-  filename        = "${path.root}/ssh.key"
-  file_permission = "0400"
 }
 
 data "aws_ami" "ubuntu" {
