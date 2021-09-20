@@ -51,7 +51,6 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-
 resource "aws_instance" "web" {
   ami           = "ami-091f21ecba031b39a"
   instance_type = "t3.micro"
@@ -77,9 +76,9 @@ In our example we hard-coded the AWS region to `eu-central-1` using the region a
 
 The `aws_instance` our first resource. It always structured the same way:
 
-resource = top level keyword, identified the type for Terraform
-type = Type of resource, for example, aws_instance or lacework_integration_aws_cfg for Lacework.
-name = In this case "web", this is a Terraform internal name that you use as a reference. Its not the name within resource that is created. For example, the name of the VM.
+* resource = top level keyword, identified the type for Terraform
+* type = Type of resource, for example, aws_instance or lacework_integration_aws_cfg for Lacework.
+* name = In this case "web", this is a Terraform internal name that you use as a reference. Its not the name within resource that is created. For example, the name of the VM.
 
 And then you have (sometimes hundrets) of arguments to configure the actual resources. 
 Luckily, this is documented within the Terraform registry as well: <https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance>.
