@@ -6,9 +6,25 @@ resource "aws_instance" "web" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
   key_name               = aws_key_pair.ssh.key_name
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_traffic.id]
+
   tags = {
     Name = "HelloInstance"
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      user        = "ubuntu"
+      private_key = tls_private_key.ssh.private_key_pem
+      host        = self.public_ip
+    }
+
+    inline = [
+      "curl -sSL https://s3-us-west-2.amazonaws.com/www.lacework.net/download/4.2.0.218_2021-08-27_release-v4.2_918a6d2e7e45c361fce5e46d6f43134203be86ff/install.sh > /tmp/install.sh",
+      "chmod +x /tmp/install.sh",
+      "sudo /tmp/install.sh -U https://api.fra.lacework.net ThisIsNotARealToken",
+      "rm -rf /tmp/lw-install.sh"
+    ]
   }
 }
 
@@ -17,22 +33,22 @@ resource "random_id" "id" {
 }
 
 resource "tls_private_key" "ssh" {
-  algorithm   = "RSA"
-  rsa_bits = "4096"
+  algorithm = "RSA"
+  rsa_bits  = "4096"
 }
 
 resource "aws_key_pair" "ssh" {
   key_name   = "${random_id.id.hex}-ssh"
   public_key = tls_private_key.ssh.public_key_openssh
-  tags = {}
+  tags       = {}
 }
 
 data "aws_vpc" "selected" {
   default = true
 }
 
-resource "aws_security_group" "allow_ssh" {
-  name   = "${random_id.id.hex}-allow-ssh"
+resource "aws_security_group" "allow_traffic" {
+  name   = "${random_id.id.hex}-allow-traffic"
   vpc_id = data.aws_vpc.selected.id
 
   ingress = [{
@@ -46,6 +62,19 @@ resource "aws_security_group" "allow_ssh" {
     security_groups  = []
     self             = false
   }]
+
+  egress = [{
+    description      = "Lets talk to the world!"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+    prefix_list_ids  = []
+    security_groups  = []
+    self             = false
+  }]
+
   tags = {}
 }
 
