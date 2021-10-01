@@ -272,7 +272,7 @@ Copy the code above to your `main.tf` file. You can just add it to the end of fi
 During each `terraform apply` or `terraform plan` Terraform builds a dependency graph (kind of like a polygraph for Infrastructure-as-Code resources).
 It is using implicit depedency (like we created using the attributes/outputs of resources as inputs of other resources) and explicit depedency using the `depends_on` meta-argument (we will not cover this, but more details can be found here: <https://www.terraform.io/docs/language/meta-arguments/depends_on.html>) to understand in what order resources need to be created and if operations can be run in parallel (if no dependencies exist).
 
-You can actually visualize the graph using the `graph` command: https://www.terraform.io/docs/cli/commands/graph.html or use tools like blast-radius <https://github.com/28mm/blast-radius>.
+You can actually visualize the graph using the `graph` command: https://www.terraform.io/docs/cli/commands/graph.html or use tools like blast-radius <https://github.com/28mm/blast-radius> or rover <https://github.com/im2nguyen/rover>.
 
 Before finally applying our code, we need to re-initialize our Terraform workspace to download the new providers `random`and `tls`.
 

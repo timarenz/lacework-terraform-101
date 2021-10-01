@@ -12,6 +12,12 @@ module "hello_instance" {
   instance_name = "HelloInstance"
 }
 
+resource "local_file" "hello_instance_ssh" {
+  content         = module.hello_instance.ssh_private_key
+  filename        = "${path.root}/hello-instance-ssh.key"
+  file_permission = "0400"
+}
+
 module "hello_instance_nano" {
   source        = "./modules/terraform-aws-instance"
   instance_name = "HelloInstanceNano"
@@ -24,10 +30,4 @@ module "hello_instance_us" {
   }
   source        = "./modules/terraform-aws-instance"
   instance_name = "HelloInstanceUS"
-}
-
-resource "local_file" "hello_instance_ssh" {
-  content         = module.hello_instance.ssh_private_key
-  filename        = "${path.root}/hello-instance-ssh.key"
-  file_permission = "0400"
 }
