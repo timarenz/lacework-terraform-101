@@ -1357,7 +1357,56 @@ public_ip = "18.196.169.47"
 ```
 
 Et voila, you deployed the Lacework agent to the AWS instance. You can see the output of the script right in your terminal to check what did happen. Awesome, right?
-You can also run provisioners without a resource, using the `null` provider. And those `null_resources` can even be triggered everytime you run a `terraform apply`.
+
+Last but not least we want to add a variable that allows the user to pass a real Lacework agent token which we will need later.
+
+Just add the following variable to your `variables.tf` file.
+
+```hcl
+variable "lacework_agent_token" {
+  description = "Token to pass to the Lacework agent"
+  type        = string
+  default     = "ThisIsNotARealToken"
+  sensitive   = true
+}
+```
+
+There are one differences compared to the variable we set before: this is a senstive variable, which prevents the content to be displayed on the commandline.
+
+To use this variable within our provisioner we just replace the `ThisIsNotARealToken` part in the `main.tf` with the variable itself:
+
+```hcl
+resource "aws_instance" "web" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3.micro"
+  key_name               = aws_key_pair.ssh.key_name
+  vpc_security_group_ids = [aws_security_group.allow_traffic.id]
+
+  tags = {
+    Name = "HelloInstance"
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      user        = "ubuntu"
+      private_key = tls_private_key.ssh.private_key_pem
+      host        = self.public_ip
+    }
+
+    inline = [
+      "curl -sSL https://s3-us-west-2.amazonaws.com/www.lacework.net/download/4.2.0.218_2021-08-27_release-v4.2_918a6d2e7e45c361fce5e46d6f43134203be86ff/install.sh > /tmp/install.sh",
+      "chmod +x /tmp/install.sh",
+      "sudo /tmp/install.sh -U https://api.fra.lacework.net ${var.lacework_agent_token}",
+      "rm -rf /tmp/lw-install.sh"
+    ]
+  }
+}
+```
+
+Remember, this change will not apply to your existing instance, as provisioners are only executed during the creation process of a resource.
+However, to test this just destroy and reprovision your instance.
+
+By the way, you can also run provisioners without a resource, using the `null` provider. And those `null_resources` can even be triggered everytime you run a `terraform apply`.
 But, this is an advanced topic. You can find some links around this in the "What's next" section.
 
 For now, make sure you destroy your enviromnet using `terraform destroy`.
