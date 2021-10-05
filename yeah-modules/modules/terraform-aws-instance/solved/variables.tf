@@ -9,3 +9,9 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "lacework_agent_token" {
+  description = "Lacework agent token to use."
+  type = string
+  sensitive = true
+}

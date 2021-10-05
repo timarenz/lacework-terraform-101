@@ -8,8 +8,9 @@ provider "aws" {
 }
 
 module "hello_instance" {
-  source        = "./modules/terraform-aws-instance"
-  instance_name = "HelloInstance"
+  source               = "./modules/terraform-aws-instance"
+  instance_name        = "HelloInstance"
+  lacework_agent_token = "ThisIsStillNotARealToken"
 }
 
 resource "local_file" "hello_instance_ssh" {

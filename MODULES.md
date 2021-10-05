@@ -588,9 +588,13 @@ resource "aws_instance" "web" {
 }
 ```
 
-Same goes for the `instance_type`. Let's give the users choice and let them choose a name tag and also let them change the instance type while providing `t3.micro` as default value.
+Same goes for the `instance_type` and last but not least we hardcode a Lacework agent token called `ThisIsNotARealToken`. Let's give the users choice and let them choose a name tag and change the instance type while providing `t3.micro` as default value.
 
-We need to add two new input variables for this in `modules/terraform-aws-instance/variables.tf` file.
+One special case is the Lacework agen token, as this is generally speaking a sensitive value that should be printed on the command line.
+For this reason we let the user choose the Lacework agent token but mark it as senstive using the `sensitive = true` argument.
+This is supressing this specific value in the Terraform CLI output. More details can be found here: <https://www.terraform.io/docs/language/values/variables.html#suppressing-values-in-cli-output>
+
+Now, we need to add the new input variables for this in `modules/terraform-aws-instance/variables.tf` file.
 
 ```hcl
 variable "instance_name" {
@@ -603,8 +607,13 @@ variable "instance_type" {
   type = string
   default = "t3.micro"
 }
-```
 
+variable "lacework_agent_token" {
+  description = "Lacework agent token to use."
+  type = string
+  sensitive = true
+}
+```
 Those new varibales now need to be used as input for the configuration of your AWS instance in the `modules/terraform-aws-instance/variables.tf` file.
 
 ```hcl
@@ -612,9 +621,25 @@ resource "aws_instance" "web" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.ssh.key_name
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_traffic.id]
+
   tags = {
     Name = var.instance_name
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      user        = "ubuntu"
+      private_key = tls_private_key.ssh.private_key_pem
+      host        = self.public_ip
+    }
+
+    inline = [
+      "curl -sSL https://s3-us-west-2.amazonaws.com/www.lacework.net/download/4.2.0.218_2021-08-27_release-v4.2_918a6d2e7e45c361fce5e46d6f43134203be86ff/install.sh > /tmp/install.sh",
+      "chmod +x /tmp/install.sh",
+      "sudo /tmp/install.sh -U https://api.fra.lacework.net ${var.lacework_agent_token}",
+      "rm -rf /tmp/lw-install.sh"
+    ]
   }
 }
 ```
@@ -624,7 +649,6 @@ With those changes applied try to run `terraform apply`.
 ```bash
 $ terraform apply
 
-╷
 │ Error: Missing required argument
 │
 │   on main.tf line 5, in module "hello_instance":
@@ -632,15 +656,23 @@ $ terraform apply
 │
 │ The argument "instance_name" is required, but no definition was found.
 ╵
+╷
+│ Error: Missing required argument
+│
+│   on main.tf line 5, in module "hello_instance":
+│    5: module "hello_instance" {
+│
+│ The argument "lacework_agent_token" is required, but no definition was found.
 ```
 
-As our module requires the `instance_name` and no default value is given, our `terraform apply` fails as this variable is missing in our configuration.
+As our module requires the `instance_name` and `lacework_agent_token` and no default values are given, our `terraform apply` fails as those variables are missing in our configuration.
 Within the `main.tf` of our root module add the following argument:
 
 ```hcl
 module "hello_instance" {
-    source = "./modules/terraform-aws-instance"
-    instance_name = "HelloInstance"
+  source               = "./modules/terraform-aws-instance"
+  instance_name        = "HelloInstance"
+  lacework_agent_token = "ThisIsStillNotARealToken"
 }
 ```
 

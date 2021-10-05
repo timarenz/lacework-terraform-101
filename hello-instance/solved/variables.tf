@@ -3,9 +3,3 @@ variable "aws_default_region" {
   type        = string
   default     = "eu-central-1"
 }
-
-variable "lacework_agent_token" {
-  description = "Token to pass to the Lacework agent"
-  type        = string
-  sensitive   = true
-}
