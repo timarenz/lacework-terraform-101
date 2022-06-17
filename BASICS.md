@@ -22,7 +22,7 @@ I would recommend storing your code in a git repo for versioning and maybe addin
 
 In addition, for this guide, please make sure you have configured your AWS credential either as [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) or as [configuration file using AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 
-And last but not leased, clone this repo: `git clone https://github.com/timarenz/lacework-terraform-101.git`
+And last but not least, clone this repo: `git clone https://github.com/timarenz/lacework-terraform-101.git`
 
 ## Structure your first Terraform workspace
 
@@ -32,9 +32,9 @@ As best practice a workspace contains the following files:
 * `main.tf`: By default this contains all your resources and provider configuration blocks.
 * `variables.tf`: To variablize your Terraform code this file stores all input variables.
 * `outputs.tf`: You often have to output specific information (like IP adresses, URL, IDs, etc) to use in another workspace or the CLI. This is the file to create those.
-* `versions.tf`: In general it is a best practice to specify versions of Terraform and providers used within your Terraform workspace, this is the file to do so. Fore more details, see <https://www.terraform.io/docs/language/providers/requirements.html>
+* `versions.tf`: In general it is a best practice to specify versions of Terraform and providers used within your Terraform workspace, this is the file to do so. For more details, see <https://www.terraform.io/docs/language/providers/requirements.html>
 
-While those files are per best practice it is no need to create them. You can actually also just create one large file called `makelifeharder.tf` and put all your Terraform code in it.
+While those files are per best practice there is no need to create them. You can actually also just create one large file called `makelifeharder.tf` and put all your Terraform code in it.
 The Terraform CLI takes whatever `*.tf` files you have in your workspace and uses them.
 
 While it makes sense to align to the best practices shown above, it sometimes makes sense to have additional files to not end up with a massive `main.tf` and instead move specific parts of code (may resource related) to different files.
@@ -68,30 +68,30 @@ Make sure to *NEVER* store your secrets (access keys, etc) in your Terraform cod
 Most providers support sourcing secrets from the runtime environment by using configuration files or environment variables.
 See this example from AWS: <https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication>
 
-There are roughly 1400 providers available as of today, so you virtually can configure evertyhing with Terraform.
+There are roughly 1400 providers available as of today, so you virtually can configure everything with Terraform.
 The Terraform registry is the place to find providers and documentation: <https://registry.terraform.io/browse/providers>
 
-In our AWS provider example we hard-coded the AWS region to `eu-central-1` using the region argument.
+In our AWS provider example we hard-coded the AWS region to `eu-central-1` using the region argument. The chosen Linux AMI is only available in this specific region. 
 
 ### resource block
 
-The `aws_instance` our first resource. It always structured the same way:
+The `aws_instance` is our first resource. It is always structured the same way:
 
 * *resource*: Top level keyword, identifies the type for Terraform
 * *type*: Type of resource, for example, aws_instance or lacework_integration_aws_cfg depending on the provider used.
 * *name*: In this case "web", this is a Terraform internal name that you use as a reference. Its not the name within resource that is created. For example, the name of the VM.
 
-And then you have (sometimes hundrets) of arguments to configure the actual resources. 
+And then you have (sometimes hundreds) of arguments to configure the actual resources. 
 Luckily, this is documented within the Terraform registry as well: <https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance>.
 
 General information around the Terraform sytanx can also be found here: <https://www.terraform.io/docs/language/index.html>. (Highly recommeded read!)
 
 ## Initialize your workspace
 
-To deploy your first resource, an AWS instance, we now need to initialize our workspace and then apply our Terraform configuration.
+To deploy your first resource, an AWS instance, we first need to initialize our workspace and then apply our Terraform configuration.
 To do so run the `terraform init` in the directory that contains your Terraform files.
-What will happen here is that Terraform looks at your code and idenitfizies what providers and modules (we will cover this later) will be required.
-All required providers and modules are then downloaded and cached into your workding directory.
+What will happen here is that Terraform looks at your code and identifies what providers and modules (we will cover this later) will be required.
+All required providers and modules are then downloaded and cached into your working directory.
 
 Run `terraform init` now. After your initilized your workspace try to apply your first Terraform configuration.
 
@@ -124,7 +124,7 @@ commands will detect it and remind you to do so if necessary.
 ## Apply your Terraform code
 
 Now that your workspace is initialized we want to apply our Terraform code and as a result an instance should be deployed on AWS.
-To do so run `terraform apply` in your workspace. Terraform apply create an 'execution plan' (more on this in a second) that then is directly executed or applied.
+To do so run `terraform apply` in your workspace. Terraform apply create an 'execution plan' (more on this in a second) which is directly executed or applied.
 You can also only run a `terraform plan` to do a dry-run without actually changing anything.
 
 For this make sure you have configured your AWS credentials using environmnet variables or the credentials file created by AWS CLI: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication
@@ -157,10 +157,10 @@ Do you want to perform these actions?
   Enter a value:
 ```
 
-What Terraform is doing now, is to create first a so called plan. Simply put, this plan compares the Terraform code with the real world to understand if a resources needs to be added, changed or destroyed.
+What Terraform is doing now, is to create first a so called plan. Simply put, this plan compares the Terraform code with the real world to understand if resources need to be added, changed or destroyed.
 The plan can be used within your deployment pipeline, for example as a pull request comment before approval, to validate if the changes you are about to apply are really what you want or if there is some mistake.
 
-If not already done so approve the plan by typing yes and let Terrform do its magic.
+If not already done yet, approve the plan by typing yes and let Terrform do its magic.
 
 ```bash
 [ ... ]
@@ -231,7 +231,7 @@ And while we now have the public IP address we still can not connect, because we
 
 ## New resources, creating implicit dependencies and more stuff that sounds hard but is actually easy
 
-To actually be able to access the instance we created using SSH we not only need to somehow deploy a SSH key but also allow SSH access via TCP port 22 to this specific instance.
+To actually be able to access the instance we've created using SSH we not only need to somehow deploy a SSH key but also allow SSH access via TCP port 22 to this specific instance.
 And we will do this in two steps, first we will dynamically create a new unique SSH key pair, add this key pair to AWS and assign in to our instance.
 
 Below you will find the code to generate and SSH key pair and add it to AWS.
@@ -256,11 +256,11 @@ resource "aws_key_pair" "ssh" {
 We need to create a random ID because a key pair in AWS needs to have an unique key name, for this we use the `random_id`resource.
 While this uses a new provider called `random`, no additional provider block is requied as this provider doesn't need any configuration.
 
-Second, we create a new TLS key pair using the `tls_private_key`resource out of the `tls` provider. Again, now provider block is required.
+Second, we create a new TLS key pair using the `tls_private_key`resource out of the `tls` provider. Again, no provider block is required.
 
 Last, we create the actual AWS key pair and we use the attribues from the resources `random_id` and `tls_private_key` as inputs for this new resource.
-You can see different styles of using those attributes, for `key_name` we actually use the output of the `random_id` resource as part af the string. 
-For this reasing we need to use interpolation. This bascially means put `${ ... }` around the variable.
+You can see different styles of using those attributes, for `key_name` we actually use the output of the `random_id` resource as part of the string. 
+For this reason we need to use interpolation. This bascially means put `${ ... }` around the variable.
 The `public_key` attribute actually uses the direct output of the `tls_private_key` as input. So, no interpolation is requied.
 
 As a reminder, resources are always adressed in the following pattern: <TYPE>.<NAME>.<ATTRIBUTE> in our case this is `tls_private_key.ssh.public_key_openssh` and `random_id.id.hex`. 
